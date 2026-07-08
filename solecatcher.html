@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SoleCatcher">
+<meta name="theme-color" content="#0a0a0a">
+<title>SoleCatcher — Heat Watchlist</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600;700&display=swap');
+:root{
+  --bg:#0a0a0b;--bg2:#111114;--card:#141418;--card2:#1b1b21;--line:#26262e;
+  --ink:#f2f2f4;--muted:#8a8a97;--dim:#5c5c68;
+  --heat:#ff5a1f;--heat2:#ff7a3c;--ember:#ffb03a;--flame:#ff3b30;
+  --live:#2fd06a;--soon:#ffb03a;--cool:#3a86ff;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;}
+::-webkit-scrollbar{display:none;}
+
+/* HEADER */
+.hdr{background:linear-gradient(180deg,#15100c,#0a0a0b);border-bottom:1px solid var(--line);padding:max(env(safe-area-inset-top),12px) 16px 12px;flex-shrink:0;position:relative;z-index:50;}
+.hdr::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--heat),var(--flame),transparent);}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;}
+.brand{display:flex;align-items:center;gap:11px;}
+.mark{width:42px;height:42px;border-radius:11px;background:radial-gradient(circle at 30% 25%,var(--heat2),var(--flame) 70%);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 0 18px rgba(255,90,31,.35);}
+.brand-top{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--heat2);letter-spacing:2.5px;text-transform:uppercase;line-height:1;}
+.brand-name{font-family:'Bebas Neue',sans-serif;font-size:27px;letter-spacing:1px;line-height:.95;color:var(--ink);}
+.month-pill{background:#1c130b;border:1px solid var(--heat);border-radius:20px;padding:6px 12px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--ember);letter-spacing:1px;white-space:nowrap;}
+
+/* STATS */
+.stats{display:flex;gap:8px;margin-top:13px;}
+.stat{flex:1;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:8px 6px;text-align:center;}
+.stat-n{font-family:'Bebas Neue',sans-serif;font-size:24px;line-height:1;color:var(--ink);}
+.stat-n.heat{color:var(--heat2);}
+.stat-l{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;margin-top:3px;}
+
+/* TOOLBAR */
+.toolbar{padding:10px 16px;flex-shrink:0;background:var(--bg);border-bottom:1px solid var(--line);z-index:40;}
+.search-wrap{position:relative;}
+.search{width:100%;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 12px 11px 38px;color:var(--ink);font-family:'Barlow',sans-serif;font-size:15px;}
+.search:focus{outline:none;border-color:var(--heat);}
+.search::placeholder{color:var(--dim);}
+.search-ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;opacity:.6;}
+.actions{display:flex;gap:8px;margin-top:9px;}
+.act{flex:1;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;}
+.act:active{background:var(--card2);}
+.act.on{background:#1c130b;border-color:var(--heat);color:var(--ember);}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 14px calc(28px + env(safe-area-inset-bottom));}
+
+/* GROUP */
+.group{margin-bottom:14px;}
+.group-head{display:flex;align-items:center;gap:10px;padding:9px 4px 9px 2px;cursor:pointer;}
+.chev{font-size:12px;color:var(--dim);transition:transform .18s;width:12px;flex-shrink:0;}
+.group.collapsed .chev{transform:rotate(-90deg);}
+.group.collapsed .group-body{display:none;}
+.g-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink);}
+.g-brand{font-size:10px;font-weight:700;color:var(--dim);letter-spacing:1px;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;}
+.g-count{margin-left:auto;background:var(--card2);border:1px solid var(--line);border-radius:20px;padding:2px 9px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--muted);}
+.g-accent{width:4px;align-self:stretch;border-radius:4px;background:var(--heat);flex-shrink:0;}
+
+.group-body{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--card);}
+
+/* DROP BANNER */
+.drop-banner{display:flex;align-items:center;gap:8px;padding:8px 13px;background:linear-gradient(90deg,#1c130b,#141418);border-bottom:1px solid var(--line);}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--soon);box-shadow:0 0 8px var(--soon);flex-shrink:0;}
+.drop-txt{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.6px;color:var(--ember);text-transform:uppercase;}
+
+/* SUBGROUP */
+.sub-head{padding:8px 13px;background:var(--bg2);border-bottom:1px solid var(--line);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);border-top:1px solid var(--line);}
+
+/* ITEM */
+.item{display:flex;align-items:center;gap:11px;padding:11px 13px;border-bottom:1px solid #1a1a20;}
+.item:last-child{border-bottom:none;}
+.item.hide{display:none;}
+.item-body{flex:1;min-width:0;}
+.item-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;line-height:1.15;color:var(--ink);}
+.item-meta{display:flex;align-items:center;gap:7px;margin-top:3px;flex-wrap:wrap;}
+.sku{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--heat2);background:#1c130b;border:1px solid #3a2413;border-radius:5px;padding:1px 6px;}
+.kw{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--cool);text-transform:uppercase;}
+.price{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--ember);letter-spacing:.5px;}
+.bell{width:38px;height:38px;flex-shrink:0;border-radius:10px;border:1px solid var(--line);background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;filter:grayscale(1);opacity:.5;transition:.15s;}
+.bell.on{filter:none;opacity:1;background:#1c130b;border-color:var(--heat);box-shadow:0 0 10px rgba(255,90,31,.25);}
+
+/* SEARCH TERMS */
+.terms-card{border:1px solid var(--line);border-radius:var(--r);background:var(--card);padding:13px;}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;}
+.chip{background:var(--card2);border:1px solid var(--line);border-radius:20px;padding:5px 11px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;color:var(--ink);letter-spacing:.4px;cursor:pointer;}
+.chip:active{border-color:var(--heat);color:var(--ember);}
+
+.empty{text-align:center;color:var(--dim);padding:40px 20px;font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:1px;text-transform:uppercase;}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(20px);background:#1c130b;border:1px solid var(--heat);color:var(--ember);padding:10px 18px;border-radius:24px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.6px;opacity:0;pointer-events:none;transition:.25s;z-index:100;text-transform:uppercase;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.foot{text-align:center;color:var(--dim);font-size:11px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;padding:18px 0 6px;text-transform:uppercase;}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="hdr-top">
+    <div class="brand">
+      <div class="mark">&#128293;</div>
+      <div>
+        <div class="brand-top">SoleCatcher</div>
+        <div class="brand-name">HEAT WATCHLIST</div>
+      </div>
+    </div>
+    <div class="month-pill" id="monthPill">JULY 2026</div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-n" id="stTotal">0</div><div class="stat-l">Items</div></div>
+    <div class="stat"><div class="stat-n heat" id="stSku">0</div><div class="stat-l">SKUs</div></div>
+    <div class="stat"><div class="stat-n" id="stGroups">0</div><div class="stat-l">Groups</div></div>
+    <div class="stat"><div class="stat-n" id="stAlerts">0</div><div class="stat-l">Alerts</div></div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="search-wrap">
+    <span class="search-ico">&#128269;</span>
+    <input class="search" id="search" placeholder="Filter items, SKUs, players…" autocomplete="off">
+  </div>
+  <div class="actions">
+    <button class="act" id="btnAlertAll">&#128276; Alert All</button>
+    <button class="act" id="btnExpand">&#8645; Expand</button>
+    <button class="act" id="btnCopy">&#128203; Copy SKUs</button>
+  </div>
+</div>
+
+<div class="main" id="main"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ WATCHLIST DATA — SoleCatcher Heat Watchlist, July 2026 ============ */
+var GROUPS = [
+  { name:'Kobe', brand:'Nike', accent:'#7a3cff', items:[
+    {sku:'IV7127-600', name:'Kobe 3 Low Protro Atomic Pink'},
+    {sku:'IM4325-700', name:'Kobe 4 Protro Lakers'},
+    {sku:'IQ4110-100', name:'Kobe 4 Draft Pack GS'},
+    {sku:'IQ3917-100', name:'Kobe 3 Low Protro WNBA All-Star'},
+    {name:'Kobe Team Bank (TB)', kw:true},
+    {name:'Kobe Apparel Collection', kw:true},
+  ]},
+  { name:'Ja', brand:'Nike', accent:'#2fd06a', items:[
+    {sku:'IU6793-800', name:'Ja 3 Animal Pack Tiger'},
+    {name:'Ja 3 Kool-Aid', kw:true},
+    {name:'Ja 3 Jurassic Park', kw:true},
+    {name:'Ja 3 Jurassic Park Silver', kw:true},
+  ]},
+  { name:'Jordan', brand:'Jordan', accent:'#ff3b30', items:[
+    {sku:'IF4396-104', name:'Air Jordan 3 True Blue'},
+    {sku:'HV0823-101', name:'Air Jordan 4 Birds of Paradise'},
+    {sku:'IQ6573-100', name:'Air Jordan 7 Miro'},
+    {sku:'IV7638-001', name:'Free The Youth Jordan 16'},
+    {name:'Jordan 11 Gamma', kw:true},
+    {name:'Jordan 12 French Blue', kw:true},
+  ]},
+  { name:'Nike Basketball', brand:'Nike', accent:'#ff5a1f', items:[
+    {sku:'IH0948-500', name:'GT Cut 4 EYBL'},
+    {sku:'IM4667-400', name:'Book 2 Detroit Tigers'},
+    {sku:'IH1118-600', name:'KD Bubble Gum Bounce'},
+    {sku:'IM4409-001', name:'KD 6 Meteorology'},
+    {name:'LeBron 23 Hardwood Classic', kw:true},
+    {name:'LeBron 23 Stewie', kw:true},
+  ]},
+  { name:'SB', brand:'Nike SB', accent:'#ffb03a', items:[
+    {sku:'IQ8395-100', name:'SB Air Max 95 Club 58'},
+    {sku:'IU4491-100', name:'Beyond SB Dunk High'},
+  ]},
+  { name:'KAWS x MLB', brand:'Complex / Fanatics', accent:'#ff7a3c', drop:'Drops Jul 20 · 9AM PT', items:[
+    {name:'Fanatics x KAWS Los Angeles Dodgers Bat', kw:true, price:'$400'},
+    {name:'Fanatics x KAWS New York Yankees Bat', kw:true, price:'$400'},
+    {name:'KAWS Nike MLB Authentic Jersey Dodgers', kw:true, price:'$650'},
+    {name:'KAWS Nike MLB Authentic Jersey Yankees', kw:true, price:'$650'},
+    {name:'KAWS Nike MLB Stadium Jersey Dodgers', kw:true, price:'$275'},
+    {name:'KAWS Nike MLB Stadium Jersey Yankees', kw:true, price:'$275'},
+    {name:'KAWS Nike Dugout Bomber Jacket Dodgers', kw:true, price:'$350'},
+    {name:'KAWS Nike Dugout Bomber Jacket Yankees', kw:true, price:'$350'},
+    {name:'KAWS SS NN Max 90 Dodgers (Royal / Black)', kw:true, price:'$90'},
+    {name:'KAWS SS NN Max 90 Yankees (Navy / White)', kw:true, price:'$90'},
+    {name:'KAWS Elevated Max 90 Tee Dodgers', kw:true, price:'$80'},
+    {name:'KAWS Elevated Max 90 Tee Yankees', kw:true, price:'$80'},
+    {name:'KAWS Womens Boxy Tee Dodgers / Yankees', kw:true, price:'$80'},
+    {name:'KAWS Nike True Flat Brim Fitted Dodgers', kw:true, price:'$65'},
+    {name:'KAWS Nike Club AFRAME Dodgers / Yankees', kw:true, price:'$60'},
+    {name:'Fanatics x KAWS Baseball Dodgers / Yankees', kw:true, price:'$40'},
+  ]},
+  { name:'Mexico', brand:'adidas', accent:'#2fd06a', items:[
+    {name:'Mexico Home Authentic', kw:true},
+    {name:'Mexico Away', kw:true},
+    {name:'Mexico Third', kw:true},
+    {name:'Mexico Goalkeeper', kw:true},
+    {name:'Mexico Anthem Jacket', kw:true},
+    {name:'Mexico Track Jacket', kw:true},
+    {name:'Mexico Training Top', kw:true},
+    {name:'Mexico Pre-Match Top', kw:true},
+    {name:'Mexico Originals Collection', kw:true},
+  ]},
+  { name:'Netherlands', brand:'Nike', accent:'#ff5a1f', items:[
+    {name:'Netherlands Home Match', kw:true},
+    {name:'Netherlands Away Match', kw:true},
+    {name:'Netherlands Home Stadium', kw:true},
+    {name:'Netherlands Away Stadium', kw:true},
+    {name:'Netherlands Third', kw:true},
+    {name:'Netherlands Anthem Jacket', kw:true},
+    {name:'Netherlands Strike Top', kw:true},
+    {name:'Netherlands Pre-Match Top', kw:true},
+    {name:'Netherlands Training Jersey', kw:true},
+  ], subs:[
+    { title:'Player Prints', items:[
+      {name:'Virgil van Dijk', kw:true},{name:'Frenkie de Jong', kw:true},{name:'Xavi Simons', kw:true},
+      {name:'Cody Gakpo', kw:true},{name:'Jeremie Frimpong', kw:true},{name:'Tijjani Reijnders', kw:true},
+      {name:'Ryan Gravenberch', kw:true},{name:'Denzel Dumfries', kw:true},{name:'Matthijs de Ligt', kw:true},
+      {name:'Nathan Aké', kw:true},{name:'Justin Kluivert', kw:true},{name:'Jorrel Hato', kw:true},
+      {name:'Noa Lang', kw:true},{name:'Brian Brobbey', kw:true},{name:'Memphis Depay', kw:true},
+    ]}
+  ]},
+  { name:'Norway', brand:'Nike', accent:'#3a86ff', items:[
+    {name:'Norway Match Home', kw:true},
+    {name:'Norway Match Away', kw:true},
+    {name:'Norway Stadium Home', kw:true},
+    {name:'Norway Stadium Away', kw:true},
+    {name:'Norway Third', kw:true},
+    {name:'Norway Goalkeeper', kw:true},
+    {name:'Norway Anthem Jacket', kw:true},
+    {name:'Norway Strike Top', kw:true},
+    {name:'Norway Training Jersey', kw:true},
+  ], subs:[
+    { title:'Player Prints', items:[
+      {name:'Braut Haaland 9', kw:true},{name:'Erling Haaland 9', kw:true},
+    ]}
+  ]},
+];
+
+var SEARCH_TERMS = ['Kobe','Protro','Jordan','SB Dunk','Book','GT Cut','Ja','Mexico Jersey',
+  'Netherlands Jersey','Norway Jersey','Braut Haaland','Haaland','Van Dijk','Gakpo','Xavi Simons',
+  'Reijnders','Frimpong','Frenkie de Jong','KAWS','KAWS MLB','KAWS Dodgers','KAWS Yankees'];
+
+/* ============ STATE ============ */
+var LS='solecatcher_v1';
+var alerts={}, collapsed={};
+try{var raw=localStorage.getItem(LS);if(raw){var d=JSON.parse(raw);alerts=d.alerts||{};collapsed=d.collapsed||{};}}catch(e){}
+function persist(){try{localStorage.setItem(LS,JSON.stringify({alerts:alerts,collapsed:collapsed}));}catch(e){}}
+
+function itemId(gi,si,ii){return gi+'.'+(si==null?'x':si)+'.'+ii;}
+function eachItem(fn){
+  GROUPS.forEach(function(g,gi){
+    g.items.forEach(function(it,ii){fn(it,itemId(gi,null,ii),g);});
+    (g.subs||[]).forEach(function(sub,si){
+      sub.items.forEach(function(it,ii){fn(it,itemId(gi,si,ii),g);});
+    });
+  });
+}
+
+/* ============ RENDER ============ */
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+function itemRow(it,id){
+  var on=alerts[id]?' on':'';
+  var meta='';
+  if(it.sku) meta+='<span class="sku">'+esc(it.sku)+'</span>';
+  else meta+='<span class="kw">Keyword</span>';
+  if(it.price) meta+='<span class="price">'+esc(it.price)+'</span>';
+  return '<div class="item" data-id="'+id+'" data-text="'+esc((it.name+' '+(it.sku||'')).toLowerCase())+'">'+
+    '<div class="item-body"><div class="item-name">'+esc(it.name)+'</div>'+
+    '<div class="item-meta">'+meta+'</div></div>'+
+    '<div class="bell'+on+'" data-bell="'+id+'">&#128276;</div></div>';
+}
+
+function render(){
+  var totalGroups=GROUPS.length, main=document.getElementById('main'), html='';
+  GROUPS.forEach(function(g,gi){
+    var cnt=g.items.length+(g.subs||[]).reduce(function(a,s){return a+s.items.length;},0);
+    var col=collapsed['g'+gi]?' collapsed':'';
+    html+='<div class="group'+col+'" data-g="'+gi+'">';
+    html+='<div class="group-head" data-toggle="g'+gi+'">'+
+      '<span class="chev">&#9660;</span>'+
+      '<div class="g-accent" style="background:'+g.accent+'"></div>'+
+      '<div><div class="g-title">'+esc(g.name)+'</div><div class="g-brand">'+esc(g.brand)+'</div></div>'+
+      '<span class="g-count">'+cnt+'</span></div>';
+    html+='<div class="group-body">';
+    if(g.drop) html+='<div class="drop-banner"><span class="dot"></span><span class="drop-txt">'+esc(g.drop)+'</span></div>';
+    g.items.forEach(function(it,ii){html+=itemRow(it,itemId(gi,null,ii));});
+    (g.subs||[]).forEach(function(sub,si){
+      html+='<div class="sub-head">'+esc(sub.title)+'</div>';
+      sub.items.forEach(function(it,ii){html+=itemRow(it,itemId(gi,si,ii));});
+    });
+    html+='</div></div>';
+  });
+  // search terms
+  html+='<div class="group"><div class="group-head" style="cursor:default">'+
+    '<span class="chev" style="opacity:0">&#9660;</span>'+
+    '<div class="g-accent" style="background:var(--ember)"></div>'+
+    '<div><div class="g-title">Search Terms</div><div class="g-brand">Monitor keywords</div></div>'+
+    '<span class="g-count">'+SEARCH_TERMS.length+'</span></div>'+
+    '<div class="terms-card"><div class="chips">'+
+    SEARCH_TERMS.map(function(t){return '<span class="chip" data-term="'+esc(t)+'">'+esc(t)+'</span>';}).join('')+
+    '</div></div></div>';
+  html+='<div class="empty" id="emptyMsg" style="display:none">No matches</div>';
+  html+='<div class="foot">SoleCatcher · '+totalGroups+' groups loaded</div>';
+  main.innerHTML=html;
+  updateStats();
+}
+
+function updateStats(){
+  var total=0,sku=0,al=0;
+  eachItem(function(it,id){total++;if(it.sku)sku++;if(alerts[id])al++;});
+  document.getElementById('stTotal').textContent=total;
+  document.getElementById('stSku').textContent=sku;
+  document.getElementById('stGroups').textContent=GROUPS.length;
+  document.getElementById('stAlerts').textContent=al;
+}
+
+/* ============ EVENTS ============ */
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},1900);}
+
+document.getElementById('main').addEventListener('click',function(e){
+  var bell=e.target.closest('[data-bell]');
+  if(bell){var id=bell.getAttribute('data-bell');alerts[id]=!alerts[id];if(!alerts[id])delete alerts[id];bell.classList.toggle('on',!!alerts[id]);persist();updateStats();toast(alerts[id]?'Alert on':'Alert off');return;}
+  var tog=e.target.closest('[data-toggle]');
+  if(tog){var k=tog.getAttribute('data-toggle');collapsed[k]=!collapsed[k];tog.closest('.group').classList.toggle('collapsed',!!collapsed[k]);persist();return;}
+  var chip=e.target.closest('[data-term]');
+  if(chip){var term=chip.getAttribute('data-term');document.getElementById('search').value=term;filter(term);toast('Filtered: '+term);window.scrollTo?main.scrollTop=0:0;return;}
+});
+
+function filter(q){
+  q=(q||'').trim().toLowerCase();
+  var items=document.querySelectorAll('.item'),shown=0;
+  items.forEach(function(el){
+    var hit=!q||el.getAttribute('data-text').indexOf(q)>=0;
+    el.classList.toggle('hide',!hit);if(hit)shown++;
+  });
+  // hide empty groups while filtering
+  document.querySelectorAll('.group[data-g]').forEach(function(gr){
+    var vis=gr.querySelectorAll('.item:not(.hide)').length;
+    gr.style.display=(q&&vis===0)?'none':'';
+  });
+  document.getElementById('emptyMsg').style.display=(q&&shown===0)?'block':'none';
+}
+document.getElementById('search').addEventListener('input',function(){filter(this.value);});
+
+document.getElementById('btnAlertAll').addEventListener('click',function(){
+  var allOn=true;eachItem(function(it,id){if(!alerts[id])allOn=false;});
+  eachItem(function(it,id){if(allOn)delete alerts[id];else alerts[id]=true;});
+  this.classList.toggle('on',!allOn);persist();
+  document.querySelectorAll('[data-bell]').forEach(function(b){b.classList.toggle('on',!!alerts[b.getAttribute('data-bell')]);});
+  updateStats();toast(allOn?'All alerts cleared':'Alerts set on all items');
+});
+
+document.getElementById('btnExpand').addEventListener('click',function(){
+  var anyCollapsed=GROUPS.some(function(g,gi){return collapsed['g'+gi];});
+  GROUPS.forEach(function(g,gi){collapsed['g'+gi]=!anyCollapsed;});
+  persist();
+  document.querySelectorAll('.group[data-g]').forEach(function(gr){gr.classList.toggle('collapsed',!anyCollapsed);});
+  this.innerHTML=anyCollapsed?'&#8645; Collapse':'&#8645; Expand';
+});
+
+document.getElementById('btnCopy').addEventListener('click',function(){
+  var lines=[];eachItem(function(it){if(it.sku)lines.push(it.sku+'\t'+it.name);});
+  var txt=lines.join('\n');
+  function done(){toast(lines.length+' SKUs copied');}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,function(){fallback(txt);done();});}
+  else{fallback(txt);done();}
+});
+function fallback(txt){var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);}
+
+render();
+// set expand button label based on state
+(function(){var anyCollapsed=GROUPS.some(function(g,gi){return collapsed['g'+gi];});document.getElementById('btnExpand').innerHTML=anyCollapsed?'&#8645; Collapse':'&#8645; Expand';})();
+</script>
+</body>
+</html>
